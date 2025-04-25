@@ -25,34 +25,41 @@ async function setAgents(data) {
     }
   });
 
-  const agents = await response.json();
-  if(!agents.success){
-    throw new Error(agents.message);
+  const agentsData = await response.json();
+  const agents = agentsData.data.agents;
+  if(!agentsData.success){
+    throw new Error(agentsData.message);
   }else if(!response.ok){
     console.log(agents);
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
 
   agentsDiv.innerHTML = '';
-  agents.data.agents.forEach(agent => {
-    const div = document.createElement('div');
-    div.className = 'agent';
-  
-    div.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem;">
-          ${agent.name.charAt(0).toUpperCase()}
+  if(agents.length === 1){
+    agentsDiv.innerHTML = '<h3 style = "font-weight: 100">Your assistant will be here soon :)</h3>'
+    await selectAgent(agents[0]._id, data.selectedOrgId, data.proxy_auth_token)
+    closeWindow();
+  }else{
+    agents.forEach(agent => {
+      const div = document.createElement('div');
+      div.className = 'agent';
+    
+      div.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem;">
+            ${agent.name.charAt(0).toUpperCase()}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-weight: 500; font-size: 1rem;">${agent.name}</div>
+            <div style="font-size: 0.85rem; color: #aaa;">Click to assign</div>
+          </div>
         </div>
-        <div style="flex: 1;">
-          <div style="font-weight: 500; font-size: 1rem;">${agent.name}</div>
-          <div style="font-size: 0.85rem; color: #aaa;">Click to assign</div>
-        </div>
-      </div>
-    `;
-  
-    div.onclick = () => selectAgent(agent._id, data.selectedOrgId, data.proxy_auth_token);
-    agentsDiv.appendChild(div);
-  });  
+      `;
+    
+      div.onclick = () => selectAgent(agent._id, data.selectedOrgId, data.proxy_auth_token);
+      agentsDiv.appendChild(div);
+    });  
+  }
 }
 
 
@@ -111,6 +118,10 @@ async function getFromStorage(keys) {
 function initiateClosePopup(err){
   agentsDiv.innerHTML = '<h3 style = "font-weight: 100">Your assistant will be here soon :)</h3>'
     setTimeout(() => {
-      window.parent.postMessage({ closeIframe: true }, "*");
+      closeWindow();
     }, 1000);
+}
+
+function closeWindow(){
+  window.parent.postMessage({ closeIframe: true }, "*");
 }
