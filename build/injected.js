@@ -15,7 +15,7 @@ window.addEventListener('message', (event) => {
 
 async function setAgents(data) {
   if (!data?.proxy_auth_token) {
-    throw new Error("proxy_auth_token is required");
+    throw new Error("Please login to <a href='https://chat.walkover.in/login' style='color: lightblue;'>50Agents</a>");
   }
 
   const response = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/agent/meeting-agents?orgId=${data.selectedOrgId}`, {

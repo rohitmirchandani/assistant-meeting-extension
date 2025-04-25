@@ -1,46 +1,54 @@
 {
-    "manifest_version": 3,
-    "name": "Assistant Meeting Companion",
-    "description": "To take notes and summarize meetings",
-    "version": "1.0",
-    "action": {
-      "default_popup": "index.html", 
-      "default_icon": {
-        "128": "icon.png"
-      }
-    },
-    "permissions": [
-      "storage", 
-      "cookies"
-    ],
-    "background": {
-      "service_worker": "background.js", 
-      "type": "module"
-    },
-    "content_scripts": [
-      {
-        "matches": [
-          "*://*.zoom.us/j/*",         
-          "*://meet.google.com/*-*",   
-          "*://meet.google.com/new*",
-          "*://*.zoom.us/wc/*/join*",
-          "*://*.teams.microsoft.com/*/meetup-join/*" 
-        ],
-        "js": ["content.js"]
-      }
-    ],
-    "host_permissions": [
-      "http://*/*",
-      "https://*/*"
-    ],
-    "web_accessible_resources": [
-      {
-        "resources": ["injected.html", "injected.js"],
-        "matches": ["<all_urls>"]
-      }
-    ], 
-    "icons": {
-      "128" : "icon.png"
+  "manifest_version": 3,
+  "name": "Assistant Meeting Companion",
+  "description": "To take notes and summarize meetings",
+  "version": "1.0",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "128": "icon.png"
     }
+  },
+  "permissions": [
+    "storage",
+    "cookies"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.zoom.us/j/*",
+        "*://meet.google.com/*-*",
+        "*://meet.google.com/new*",
+        "*://*.zoom.us/wc/*/join*",
+        "*://*.teams.microsoft.com/*/meetup-join/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "host_permissions": [
+    "*://*.zoom.us/*",
+    "*://meet.google.com/*",
+    "*://*.teams.microsoft.com/*",
+    "*://chat.walkover.in/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected.html",
+        "injected.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
   }
-  
+}
