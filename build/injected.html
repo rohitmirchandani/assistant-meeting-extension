@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Agent</title>
+  <style>
+    html{
+      border: 1px solid #d0d0d0;
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      padding: 16px;
+      background: #121212;
+      color: #e0e0e0;
+    }
+
+    h3 {
+      margin: 0 0 20px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .agent {
+      padding: 14px 18px;
+      border: 1px solid #2c2c2c;
+      border-radius: 12px;
+      background-color: #1e1e1e;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .agent:hover {
+      background-color: #292929;
+      border-color: #444;
+      transform: translateY(-1px);
+    }
+
+    #close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #2d2d2d;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    #close-btn:hover {
+      background: #444;
+    }
+
+    #agents {
+      margin-top: 8px;
+    }
+
+    p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <button id="close-btn">✕</button>
+  <h3>Select your companion agent for this meeting</h3>
+  <div id="agents">Loading...</div>
+  <script src="injected.js" type="module"></script>
+</body>
+</html>
