@@ -15,10 +15,10 @@ window.addEventListener('message', (event) => {
 
 async function setAgents(data) {
   if (!data?.proxy_auth_token) {
-    throw new Error("Please login to <a href='https://chat.walkover.in/login' style='color: lightblue;'>50Agents</a>");
+    throw new Error("Please login to <a href='https://chat.walkover.in/login' target='_blank' style='color: lightblue;'>50Agents</a>");
   }
 
-  const response = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/agent/meeting-agents?orgId=${data.selectedOrgId}`, {
+  const response = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/agent/meeting-agents?orgId=${data.selectedOrgId||''}`, {
     headers: {
       proxy_auth_token: data.proxy_auth_token,
       'Content-Type': 'application/json',
@@ -26,14 +26,14 @@ async function setAgents(data) {
   });
 
   const agentsData = await response.json();
-  const agents = agentsData.data.agents;
   if(!agentsData.success){
     throw new Error(agentsData.message);
   }else if(!response.ok){
     console.log(agents);
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
-
+  
+  const agents = agentsData.data.agents;
   agentsDiv.innerHTML = '';
   if(agents.length === 1){
     agentsDiv.innerHTML = '<h3 style = "font-weight: 100">Your assistant will be here soon :)</h3>'
