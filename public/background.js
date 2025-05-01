@@ -14,7 +14,7 @@ async function setTokenFromCookie(){
 async function getTokenFromCookie(){
     return new Promise((resolve, reject) => {
         chrome.cookies.get({
-            url: "https://chat.walkover.in",
+            url: "https://chat.50agents.com",
             name: "proxy_auth_token"
           }, function(cookie) {
             if (chrome.runtime.lastError) {

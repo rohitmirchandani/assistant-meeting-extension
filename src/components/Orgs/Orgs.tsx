@@ -18,6 +18,7 @@ export function Orgs() {
                 const selectedOrgId = await getFromStorage(STORAGE.selectedOrgId);
                 setUserDetails(userDetails);
                 setCurrentOrgId(selectedOrgId || userDetails.currentCompany.id);
+                await setInStorage(STORAGE.selectedOrgId, selectedOrgId || userDetails.currentCompany.id);
             } catch (error) {
                 console.error(error);
                 setError(true);

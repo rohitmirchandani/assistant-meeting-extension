@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Assistant Meeting Companion",
+  "name": "50 Agents",
   "description": "To take notes and summarize meetings",
-  "version": "1.0",
+  "version": "1.3",
   "action": {
     "default_popup": "index.html",
     "default_icon": {
@@ -35,7 +35,8 @@
     "*://*.zoom.us/*",
     "*://meet.google.com/*",
     "*://*.teams.microsoft.com/*",
-    "*://chat.walkover.in/*"
+    "*://chat.walkover.in/*", 
+    "*://chat.50agents.in/*"
   ],
   "web_accessible_resources": [
     {
