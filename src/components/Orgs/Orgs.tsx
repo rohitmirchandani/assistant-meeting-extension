@@ -8,7 +8,7 @@ import "./Orgs.scss";
 export function Orgs() {
     // @ts-ignore
     const [userDetails, setUserDetails] = useState<UserDetails>();
-    const [error, setError] = useState<boolean>(false);
+    const [error, setError] = useState<Error>();
     const [currentOrgId, setCurrentOrgId] = useState<number>();
 
     useEffect(() => {
@@ -19,9 +19,9 @@ export function Orgs() {
                 setUserDetails(userDetails);
                 setCurrentOrgId(selectedOrgId || userDetails.currentCompany.id);
                 await setInStorage(STORAGE.selectedOrgId, selectedOrgId || userDetails.currentCompany.id);
-            } catch (error) {
+            } catch (error: any) {
                 console.error(error);
-                setError(true);
+                setError(error);
             }
         };
         fetchUserDetails();
@@ -39,7 +39,7 @@ export function Orgs() {
         </h3>
 
         {error ? (
-          <p className="error">Something went wrong</p>
+          <p className="error">Something went wrong: {error.message}</p>
         ) : userDetails ? (
           <div className="org-card">
             <FormControl>

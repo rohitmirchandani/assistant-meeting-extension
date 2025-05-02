@@ -1,12 +1,13 @@
 import { Orgs } from './components/Orgs/Orgs'
 import './App.css'
-import { getFromStorage, setInStorage, STORAGE } from '../public/utility';
+import { getFromStorage, setInStorage, STORAGE, CONSTANTS } from '../public/utility';
 import { useEffect, useState } from 'react';
 import { Button, Box, Typography, CircularProgress } from '@mui/material';
 
 function App() {
   const [isToken, setIsToken] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error>();
 
   async function getToken(){
     const token = await getFromStorage(STORAGE.token);
@@ -16,6 +17,9 @@ function App() {
       if (response.token) {
         await setInStorage(STORAGE.token, response.token);
         setIsToken(true);
+      }else{
+        console.error(response, 'here is the responsesese')
+        setError(new Error('Unable to fetch token from ' + CONSTANTS.domain));
       }
     } else {
       setIsToken(true);
@@ -39,10 +43,13 @@ function App() {
       }}
     >
       <Typography variant="h5" fontWeight={600} gutterBottom>
-        👋 Welcome to Assistant Meeting Companion
+        👋 Welcome to 50Agents
       </Typography>
-
-      {loading ? (
+      {error ? (
+        <Typography variant="body1" gutterBottom sx={{ color: 'red' }}>
+          {error.message}
+        </Typography>
+      ) : loading ? (
         <CircularProgress color="inherit" />
       ) : isToken ? (
         <Orgs />
@@ -52,13 +59,13 @@ function App() {
           color="primary" 
           href="https://chat.50agents.com/login" 
           target="_blank"
-          sx={{ mt: 1, borderRadius: '8px', textTransform: 'none', '&:hover' : { color: '#eee' } }}
+          sx={{ mt: 1, borderRadius: '8px', textTransform: 'none', '&:hover': { color: '#eee' } }}
         >
           Login to Continue
         </Button>
       )}
     </Box>
-  );
+  );  
 }
 
 export default App;

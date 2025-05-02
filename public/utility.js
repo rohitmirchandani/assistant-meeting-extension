@@ -1,6 +1,10 @@
 export const STORAGE = {
     selectedOrgId: 'selectedOrgId', 
-    token: 'proxy_auth_token'
+    token: 'proxy_auth_token', 
+}
+
+export const CONSTANTS = {
+  domain: 'https://chat.50agents.com'
 }
 
 export async function setInStorage(key, value) {

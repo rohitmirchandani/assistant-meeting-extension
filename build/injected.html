@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <title>Select Agent</title>
   <style>
-    html{
+    html {
       border: 1px solid #d0d0d0;
-      height: 100%;
+      border-bottom: none;
+      height: max-content;
     }
     body {
       margin: 0;
@@ -23,6 +24,22 @@
       color: #ffffff;
     }
 
+    p {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+      color: #cccccc;
+    }
+
+    p a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+
+    p a:hover {
+      text-decoration: underline;
+    }
+
     .agent {
       padding: 14px 18px;
       border: 1px solid #2c2c2c;
@@ -34,44 +51,27 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    .agent:hover {
-      background-color: #292929;
-      border-color: #444;
+    .agent.selected {
+      background-color: #1a3c5a;
+      border-color: #4a90e2;
       transform: translateY(-1px);
     }
 
-    #close-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: #2d2d2d;
-      color: white;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 50px;
-      font-size: 0.9rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    #close-btn:hover {
-      background: #444;
+    .agent:hover {
+      background-color: #2a4d6f;
+      border-color: #4a90e2;
+      transform: translateY(-1px);
     }
 
     #agents {
       margin-top: 8px;
     }
-
-    p {
-      margin: 0;
-    }
   </style>
 </head>
 <body>
-  <button id="close-btn">✕</button>
-  <h3>Select your companion agent for this meeting</h3>
+  <h3>Joining AI Agent</h3>
   <div id="agents">Loading...</div>
+  <p>Add more agents <a href="https://50agents.com?configure-meeting-agents=true" target="_blank">here</a>.</p>
   <script src="injected.js" type="module"></script>
 </body>
 </html>

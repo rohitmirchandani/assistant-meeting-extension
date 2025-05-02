@@ -4,3 +4,6 @@ export const STORAGE: {
     selectedOrgId: string;
     token: string;
 };
+export const CONSTANTS: {
+    domain: string;
+};

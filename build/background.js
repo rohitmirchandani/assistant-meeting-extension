@@ -55,6 +55,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           case 'get-token' :
               getTokenFromCookie('proxy_auth_token').then((token) => {
                   sendResponse({ token });
+              }).catch((e) => {
+                  sendResponse({ error: e });
               })
               break;
           case 'get-storage': 

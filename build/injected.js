@@ -1,4 +1,15 @@
+const types = {
+  AUTO: 'auto', 
+  NONE: 'none'
+}
+
 let pageUrl = null;
+let selectedAgentId = null;
+let orgId = null;
+let token = null;
+let timeout = setTimeout(() => {
+  selectAgent(selectedAgentId);
+}, 60000)
 
 const agentsDiv = document.getElementById('agents');
 document.getElementById('close-btn')?.addEventListener('click', () => {
@@ -18,6 +29,9 @@ async function setAgents(data) {
     throw new Error("Please login to <a href='https://chat.50agents.com/login' target='_blank' style='color: lightblue;'>50Agents</a>");
   }
 
+  orgId = data.selectedOrgId;
+  token = data.proxy_auth_token;
+
   const response = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/agent/meeting-agents?orgId=${data.selectedOrgId||''}`, {
     headers: {
       proxy_auth_token: data.proxy_auth_token,
@@ -33,39 +47,43 @@ async function setAgents(data) {
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
   
-  const agents = agentsData.data.agents;
+  let agents = agentsData.data.agents;
+  agents = [...agents, { _id: types.NONE, name: "Don't join Agent", icon: '🚫' }]
+  if(agents.length > 2) {
+    agents = [{ _id: types.AUTO, name: 'Auto select smartly', icon: '🪄' }, ...agents]
+  }
+  selectedAgentId = agents[0]._id;
   agentsDiv.innerHTML = '';
-  if(agents.length === 1){
-    agentsDiv.innerHTML = '<h3 style = "font-weight: 100">Your assistant will be here soon :)</h3>'
-    await selectAgent(agents[0]._id, data.selectedOrgId, data.proxy_auth_token)
-    closeWindow();
-  }else{
     agents.forEach(agent => {
       const div = document.createElement('div');
-      div.className = 'agent';
-    
+      div.className = 'agent' + (agent._id === selectedAgentId ? ' selected' : '');
+      const isType = Object.values(types).includes(agent._id);
       div.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem;">
-            ${agent.name.charAt(0).toUpperCase()}
-          </div>
+            <div style="width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem;">
+              ${agent.icon || agent.name.charAt(0).toUpperCase()}
+            </div>
           <div style="flex: 1;">
             <div style="font-weight: 500; font-size: 1rem;">${agent.name}</div>
-            <div style="font-size: 0.85rem; color: #aaa;">Click to assign</div>
+            ${isType ? '' : `<div style="font-size: 0.85rem; color: #aaa;">Click to assign</div>` }
           </div>
         </div>
       `;
     
-      div.onclick = () => selectAgent(agent._id, data.selectedOrgId, data.proxy_auth_token);
+      div.onclick = () => selectAgent(agent._id);
       agentsDiv.appendChild(div);
-    });  
+    });    
   }
-}
 
 
 // Step 2: Handle agent selection
 
-async function selectAgent(agentId, orgId, token) {
+async function selectAgent(agentId) {
+  selectedAgentId = agentId;
+  if(selectedAgentId == types.NONE){
+    initiateClosePopup('Okay :)');
+    return;
+  }
   const headers = {
     'Content-Type': 'application/json',
     'Proxy_auth_Token': token
@@ -74,6 +92,7 @@ async function selectAgent(agentId, orgId, token) {
     orgId: orgId,
     meetingUrl: pageUrl
   };
+
   try {
     const res = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/meeting/add-agent/${agentId}`, {
       method: 'POST',
@@ -83,7 +102,7 @@ async function selectAgent(agentId, orgId, token) {
     initiateClosePopup();
   } catch (err) {
     console.error('API call failed:', err);
-    initiateClosePopup(err);
+    initiateClosePopup(err.message);
   }
 }
 
@@ -115,8 +134,8 @@ async function getFromStorage(keys) {
   });
 }
 
-function initiateClosePopup(err){
-  agentsDiv.innerHTML = '<h3 style = "font-weight: 100">Your assistant will be here soon :)</h3>'
+function initiateClosePopup(msg){
+  agentsDiv.innerHTML = `<h3 style = "font-weight: 100">${msg || 'Your assistant will be here soon :)'}</h3>`
     setTimeout(() => {
       closeWindow();
     }, 1000);
