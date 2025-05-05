@@ -12,9 +12,7 @@ let timeout = setTimeout(() => {
 }, 60000)
 
 const agentsDiv = document.getElementById('agents');
-document.getElementById('close-btn')?.addEventListener('click', () => {
-  window.parent.postMessage({ closeIframe: true }, '*');
-});
+document.getElementById('close-btn')?.addEventListener('click', closeWindow);
 
 window.addEventListener('message', (event) => {
   if (event.data.pageUrl) {
@@ -32,7 +30,7 @@ async function setAgents(data) {
       data.proxy_auth_token = response.token;
     }else{
       if('token' in response){
-        throw new Error("Please login to <a href='https://chat.50agents.com/login' target='_blank' style='color: lightblue;'>50Agents</a>");
+        throw new Error("Please login to <a href='https://chat.50agents.com/login?autoclose=true' target='_blank' style='color: lightblue;'>50Agents</a>");
       }
       throw new Error(response.error);
     }
@@ -50,6 +48,17 @@ async function setAgents(data) {
 
   const agentsData = await response.json();
   if (!agentsData.success) {
+    if (response.status === 401) {
+      await setInStorage('proxy_auth_token', null);
+      agentsDiv.innerHTML = `
+        <p style="color: red;">Session expired. Please reload or <a href='https://chat.50agents.com/login?autoclose=true' target='_blank' style='color: lightblue;'>login</a></p>
+        <button id="refresh-btn" style="margin: 10px auto; cursor: pointer;">Reload</button>
+      `;
+      document.getElementById('refresh-btn')?.addEventListener('click', () => {
+        refreshWindow();
+      });
+      return;
+    }    
     throw new Error(agentsData.message);
   } else if (!response.ok) {
     console.log(agents);
@@ -124,7 +133,7 @@ async function initiateAgentSelection(){
     await setAgents(data);
   }catch(err){
     console.error('Error getting extension storage:', err);
-    agentsDiv.innerHTML = `<p style = "color: red;">${err.message}</p>`;
+    agentsDiv.innerHTML = `<p style = "color: red;">${err.message || 'Something Went Wrong!!!'}</p>`;
   }
 }
 
@@ -166,5 +175,9 @@ function initiateClosePopup(msg){
 }
 
 function closeWindow(){
-  window.parent.postMessage({ closeIframe: true }, "*");
+  window.parent.postMessage({ type: "closeIframe" }, "*");
+}
+
+function refreshWindow() {
+  window.parent.postMessage({ type: "refreshIframe" }, "*");
 }

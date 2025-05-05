@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getFromStorage, STORAGE } from '../../public/utility';
+import { getFromStorage, setInStorage, STORAGE } from '../../public/utility';
 
 const setupInterceptors = async (instance: AxiosInstance) => {
   instance.interceptors.request.use(
@@ -13,9 +13,10 @@ const setupInterceptors = async (instance: AxiosInstance) => {
 
   instance.interceptors.response.use(
     (response: AxiosResponse) => response,
-    (error: AxiosError) => {
+    async (error: AxiosError) => {
       if (error.response?.status === 401) {
-        console.error('Unauthorized');
+        await setInStorage(STORAGE.token, null);
+        window.dispatchEvent(new CustomEvent('assistant_unauthorized'));
       }
       return Promise.reject(error);
     }

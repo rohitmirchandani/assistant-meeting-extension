@@ -18,26 +18,41 @@ function pollAndOpenPopup(){
   iframe.id = "agent-iframe";
   document.body.appendChild(iframe);
   
-  // Listen for close message
-  window.addEventListener('message', (event) => {
-    if (event.data.closeIframe) {
-      document.getElementById("agent-iframe")?.remove();
-    }
-  });
   
   iframe.onload = () => {
     iframe.contentWindow.postMessage({ pageUrl: window.location.href }, '*');
   };   
+
+  window.addEventListener('message', (event) => {
+    handleWindowMessage(event); 
+  });
+  
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "REFRESH_PAGE") {
+      refreshIframe();
+    }
+  });
 }
 
 let intervalId = setInterval(pollAndOpenPopup, 1000);
 
 ////////////////LISTENERS///////////////////////
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log(message, 'message in content.js');
-  if (message.type === "REFRESH_PAGE") {
-    const iframe = document.getElementById("agent-iframe");
-    if (iframe) iframe.src = chrome.runtime.getURL('injected.html'); // Refresh iframe
+function handleWindowMessage(event){
+  switch(event.data.type){
+    case 'closeIframe':
+      document.getElementById("agent-iframe")?.remove();
+      break;
+    case 'refreshIframe':
+      refreshIframe();
+      break;
+    default:
+      break;
   }
-});
+}
+
+
+function refreshIframe() {
+  const iframe = document.getElementById("agent-iframe");
+  if (iframe) iframe.src = chrome.runtime.getURL('injected.html');
+}
