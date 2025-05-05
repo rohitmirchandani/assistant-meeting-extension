@@ -45,32 +45,50 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log(
-      sender.tab
-        ? "from a content script:" + sender.tab.url
-        : "from the extension"
+        sender.tab
+            ? "from a content script:" + sender.tab.url
+            : "from the extension"
     );
-  
+
     try {
-      switch(request.type){
-          case 'get-token' :
-              getTokenFromCookie('proxy_auth_token').then((token) => {
-                  sendResponse({ token });
-              }).catch((e) => {
-                  sendResponse({ error: e });
-              })
-              break;
-          case 'get-storage': 
-              chrome.storage.local.get(request.keys, (result) => {
-                  sendResponse(result); // result is already an object with key-value pairs
-              });
-              break;
-          default: 
-              sendResponse({ error: 'Invalid request' });
-      }   
+        switch (request.type) {
+            case "get-token":
+                getTokenFromCookie("proxy_auth_token")
+                    .then((token) => {
+                        sendResponse({ token: token || null });
+                    })
+                    .catch((e) => {
+                        sendResponse({ error: e });
+                    });
+                break;
+            case "get-storage":
+                chrome.storage.local.get(request.keys, (result) => {
+                    sendResponse(result); // result is already an object with key-value pairs
+                });
+                break;
+            default:
+                sendResponse({ error: "Invalid request" });
+        }
     } catch (e) {
-      console.error("Error handling message:", e);
-      sendResponse({ error: 'Internal error' });
+        console.error("Error handling message:", e);
+        sendResponse({ error: "Internal error" });
     }
-  
+
     return true;
-  });
+});
+
+chrome.cookies.onChanged.addListener(async function (changeInfo) {
+    if (
+        changeInfo.cookie.domain.includes("chat.50agents.com") &&
+        changeInfo.cookie.name === "proxy_auth_token" && 
+        changeInfo.removed === false && 
+        !(await getFromStorage('proxy_auth_token')) 
+    ) {
+        await setInStorage('proxy_auth_token', changeInfo.cookie.value);
+        const tabs = await chrome.tabs.query({ url: "*://meet.google.com/*" });
+        for (const tab of tabs) {
+            chrome.tabs.sendMessage(tab.id, { type: "REFRESH_PAGE" });
+        }
+    }
+});
+  

@@ -5,8 +5,6 @@
   <title>Select Agent</title>
   <style>
     html {
-      border: 1px solid #d0d0d0;
-      border-bottom: none;
       height: max-content;
     }
     body {
@@ -22,22 +20,6 @@
       font-size: 1.25rem;
       font-weight: 600;
       color: #ffffff;
-    }
-
-    p {
-      margin-top: 20px;
-      margin-bottom: 10px;
-      font-size: 0.8rem;
-      color: #cccccc;
-    }
-
-    p a {
-      color: #4a90e2;
-      text-decoration: none;
-    }
-
-    p a:hover {
-      text-decoration: underline;
     }
 
     .agent {
@@ -66,12 +48,25 @@
     #agents {
       margin-top: 8px;
     }
+
+    .more-agents {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+      color: #cccccc;
+    }
+    .more-agents a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+    .more-agents a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <h3>Joining AI Agent</h3>
   <div id="agents">Loading...</div>
-  <p>Add more agents <a href="https://50agents.com?configure-meeting-agents=true" target="_blank">here</a>.</p>
   <script src="injected.js" type="module"></script>
 </body>
 </html>

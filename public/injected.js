@@ -26,13 +26,22 @@ window.addEventListener('message', (event) => {
 
 async function setAgents(data) {
   if (!data?.proxy_auth_token) {
-    throw new Error("Please login to <a href='https://chat.50agents.com/login' target='_blank' style='color: lightblue;'>50Agents</a>");
+    const response = await chrome.runtime.sendMessage({ type: 'get-token' });
+    if(response.token){
+      await setInStorage('proxy_auth_token', response.token);
+      data.proxy_auth_token = response.token;
+    }else{
+      if('token' in response){
+        throw new Error("Please login to <a href='https://chat.50agents.com/login' target='_blank' style='color: lightblue;'>50Agents</a>");
+      }
+      throw new Error(response.error);
+    }
   }
 
   orgId = data.selectedOrgId;
   token = data.proxy_auth_token;
 
-  const response = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/agent/meeting-agents?orgId=${data.selectedOrgId||''}`, {
+  const response = await fetch(`https://routes.msg91.com/api/proxy/870623/36jowpr17/agent/meeting-agents?orgId=${data.selectedOrgId || ''}`, {
     headers: {
       proxy_auth_token: data.proxy_auth_token,
       'Content-Type': 'application/json',
@@ -40,40 +49,43 @@ async function setAgents(data) {
   });
 
   const agentsData = await response.json();
-  if(!agentsData.success){
+  if (!agentsData.success) {
     throw new Error(agentsData.message);
-  }else if(!response.ok){
+  } else if (!response.ok) {
     console.log(agents);
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
-  
+
   let agents = agentsData.data.agents;
   agents = [...agents, { _id: types.NONE, name: "Don't join Agent", icon: '🚫' }]
-  if(agents.length > 2) {
+  if (agents.length > 2) {
     agents = [{ _id: types.AUTO, name: 'Auto select smartly', icon: '🪄' }, ...agents]
   }
   selectedAgentId = agents[0]._id;
   agentsDiv.innerHTML = '';
-    agents.forEach(agent => {
-      const div = document.createElement('div');
-      div.className = 'agent' + (agent._id === selectedAgentId ? ' selected' : '');
-      const isType = Object.values(types).includes(agent._id);
-      div.innerHTML = `
+  agents.forEach(agent => {
+    const div = document.createElement('div');
+    div.className = 'agent' + (agent._id === selectedAgentId ? ' selected' : '');
+    const isType = Object.values(types).includes(agent._id);
+    div.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 1rem;">
               ${agent.icon || agent.name.charAt(0).toUpperCase()}
             </div>
           <div style="flex: 1;">
             <div style="font-weight: 500; font-size: 1rem;">${agent.name}</div>
-            ${isType ? '' : `<div style="font-size: 0.85rem; color: #aaa;">Click to assign</div>` }
+            ${isType || agent._id === selectedAgentId ? '' : `<div style="font-size: 0.85rem; color: #aaa;">Click to assign</div>`}
           </div>
         </div>
       `;
-    
-      div.onclick = () => selectAgent(agent._id);
-      agentsDiv.appendChild(div);
-    });    
-  }
+
+    div.onclick = () => selectAgent(agent._id);
+    agentsDiv.appendChild(div);
+  });
+  const moreAgents = document.createElement('div');
+  moreAgents.innerHTML = `<p class = "more-agents">Add more agents <a href="https://chat.50agents.com/${orgId}?configure-meeting-agents=true" target="_blank">here</a>.</p>`
+  agentsDiv.appendChild(moreAgents);
+}
 
 
 // Step 2: Handle agent selection
@@ -129,6 +141,18 @@ async function getFromStorage(keys) {
         reject(chrome.runtime.lastError);
       } else {
         resolve(Array.isArray(keys) ? result : result[keys]);
+      }
+    });
+  });
+}
+
+async function setInStorage(key, value) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set({ [key]: value }, () => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve();
       }
     });
   });

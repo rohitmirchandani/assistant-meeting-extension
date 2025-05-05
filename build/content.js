@@ -31,3 +31,13 @@ function pollAndOpenPopup(){
 }
 
 let intervalId = setInterval(pollAndOpenPopup, 1000);
+
+////////////////LISTENERS///////////////////////
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log(message, 'message in content.js');
+  if (message.type === "REFRESH_PAGE") {
+    const iframe = document.getElementById("agent-iframe");
+    if (iframe) iframe.src = chrome.runtime.getURL('injected.html'); // Refresh iframe
+  }
+});

@@ -18,8 +18,12 @@ function App() {
         await setInStorage(STORAGE.token, response.token);
         setIsToken(true);
       }else{
-        console.error(response, 'here is the responsesese')
-        setError(new Error('Unable to fetch token from ' + CONSTANTS.domain));
+        if('token' in response){
+          setIsToken(false);
+        }else{
+          console.error(response, 'here is the responsesese')
+          setError(new Error('Unable to fetch token from ' + CONSTANTS.domain));
+        }
       }
     } else {
       setIsToken(true);

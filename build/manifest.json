@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "50 Agents",
   "description": "To take notes and summarize meetings",
-  "version": "1.5",
+  "version": "1.5.1",
   "action": {
     "default_popup": "index.html",
     "default_icon": {
