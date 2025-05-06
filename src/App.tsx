@@ -74,8 +74,9 @@ function App() {
                   gutterBottom
                   sx={{ color: "orange" }}
                 >
-                  Session expired. Please reload.
+                  Session expired. Please reload or <a style={{color: 'skyblue'}} href="https://chat.50agents.com/login?autoclose=true" target="_blank">Login</a>
                 </Typography>
+                
                 <Button
                   variant="contained"
                   color="warning"
