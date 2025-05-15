@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "50 Agents",
   "description": "To take notes and summarize meetings",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "action": {
     "default_popup": "index.html",
     "default_icon": {
@@ -24,7 +24,8 @@
         "*://meet.google.com/*-*",
         "*://meet.google.com/*",
         "*://*.zoom.us/wc/*/join*",
-        "*://*.teams.microsoft.com/*/meetup-join/*"
+        "*://teams.microsoft.com/*", 
+        "*://teams.live.com/*"
       ],
       "js": [
         "content.js"

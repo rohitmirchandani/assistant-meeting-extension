@@ -62,9 +62,25 @@
     .more-agents a:hover {
       text-decoration: underline;
     }
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 10;
+      transition: color 0.2s;
+    }
+    .close-btn:hover {
+      color: #fff;
+    }
   </style>
 </head>
 <body>
+  <button id="close-btn" class="close-btn" title="Close">&times;</button>
   <h3>Joining AI Agent</h3>
   <div id="agents">Loading...</div>
   <script src="injected.js" type="module"></script>

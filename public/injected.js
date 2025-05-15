@@ -20,7 +20,8 @@ window.addEventListener('message', (event) => {
   }
 });
 
-
+let focusedAgentIndex = 0;
+let agentDivs = [];
 
 async function setAgents(data) {
   if (!data?.proxy_auth_token) {
@@ -72,9 +73,13 @@ async function setAgents(data) {
   }
   selectedAgentId = agents[0]._id;
   agentsDiv.innerHTML = '';
-  agents.forEach(agent => {
+  agentDivs = [];
+  agents.forEach((agent, idx) => {
     const div = document.createElement('div');
     div.className = 'agent' + (agent._id === selectedAgentId ? ' selected' : '');
+    div.setAttribute('tabindex', '0');
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-label', agent.name);
     const isType = Object.values(types).includes(agent._id);
     div.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -87,17 +92,35 @@ async function setAgents(data) {
           </div>
         </div>
       `;
-
     div.onclick = () => selectAgent(agent._id);
+    div.onfocus = () => {
+      focusedAgentIndex = idx;
+      updateAgentFocus();
+    };
+    agentDivs.push(div);
     agentsDiv.appendChild(div);
   });
+  if (agentDivs.length > 0) {
+    setTimeout(() => agentDivs[0].focus(), 0);
+    focusedAgentIndex = 0;
+    updateAgentFocus();
+  }
   const moreAgents = document.createElement('div');
   moreAgents.innerHTML = `<p class = "more-agents">Add more agents <a href="https://chat.50agents.com/${orgId}?configure-meeting-agents=true" target="_blank">here</a>.</p>`
   agentsDiv.appendChild(moreAgents);
 }
 
+function updateAgentFocus() {
+  agentDivs.forEach((div, idx) => {
+    if (idx === focusedAgentIndex) {
+      div.classList.add('selected');
+      div.focus();
+    } else {
+      div.classList.remove('selected');
+    }
+  });
+}
 
-// Step 2: Handle agent selection
 
 async function selectAgent(agentId) {
   selectedAgentId = agentId;
@@ -181,3 +204,25 @@ function closeWindow(){
 function refreshWindow() {
   window.parent.postMessage({ type: "refreshIframe" }, "*");
 }
+
+
+document.addEventListener('keydown', (e) => {
+  if (!agentDivs.length) return;
+  if (document.activeElement && !agentDivs.includes(document.activeElement)) return;
+  if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
+    e.preventDefault();
+  }
+  if (e.key === 'ArrowDown') {
+    focusedAgentIndex = (focusedAgentIndex + 1) % agentDivs.length;
+    agentDivs[focusedAgentIndex].focus();
+    updateAgentFocus();
+  } else if (e.key === 'ArrowUp') {
+    focusedAgentIndex = (focusedAgentIndex - 1 + agentDivs.length) % agentDivs.length;
+    agentDivs[focusedAgentIndex].focus();
+    updateAgentFocus();
+  } else if (e.key === 'Enter') {
+    agentDivs[focusedAgentIndex].click();
+  } else if (e.key === 'Escape') {
+    closeWindow();
+  }
+});
