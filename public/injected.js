@@ -143,6 +143,7 @@ async function selectAgent(agentId) {
       headers,
       body: JSON.stringify(body)
     });
+    window.parent.postMessage({ type: "set_in_session", data: { key: pageUrl, value: '1' } }, "*");
     initiateClosePopup();
   } catch (err) {
     console.error('API call failed:', err);

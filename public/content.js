@@ -1,7 +1,21 @@
 function pollAndOpenPopup(){
-  const isMeetingUrl = MeetingUrlRegexes[window.location.hostname]?.test(window.location.href);
-  if(!isMeetingUrl) return;
+  const matchingRegex = MeetingUrlRegexes[window.location.hostname]?.find(regex => regex.test(window.location.href));
+  if(!matchingRegex) return;
   clearInterval(intervalId);
+  
+  let meetingUrl;
+  
+  if(matchingRegex.toString() === MicrosoftTeamsRegexes.pageForPopup.toString()){
+    meetingUrl = sessionStorage.getItem('meetingUrl');
+  }else{
+    meetingUrl = transformUrl(window.location.href);
+    sessionStorage.setItem('meetingUrl', meetingUrl);
+  }
+
+  if(sessionStorage.getItem(meetingUrl)){
+    return;
+  }
+
   const iframe = document.createElement('iframe');
   iframe.src = chrome.runtime.getURL('injected.html');
   iframe.style = `
@@ -20,7 +34,7 @@ function pollAndOpenPopup(){
   
   
   iframe.onload = () => {
-    iframe.contentWindow.postMessage({ pageUrl: transformUrl(window.location.href) }, '*');
+    iframe.contentWindow.postMessage({ pageUrl: meetingUrl }, '*');
   };   
 
   window.addEventListener('message', (event) => {
@@ -37,7 +51,7 @@ function pollAndOpenPopup(){
 let intervalId = setInterval(pollAndOpenPopup, 1000);
 console.log("Content TRIGGERED started", window.location.href);
 
-////////////////LISTENERS///////////////////////
+////////////////////LISTENERS///////////////////////
 
 function handleWindowMessage(event){
   switch(event.data.type){
@@ -46,6 +60,9 @@ function handleWindowMessage(event){
       break;
     case 'refreshIframe':
       refreshIframe();
+      break;
+    case 'set_in_session':
+      sessionStorage.setItem(event.data.data.key, event.data.data.value);
       break;
     default:
       break;
@@ -81,9 +98,14 @@ function transformUrl(url) {
 
 /////////////////////// VARIABLES ///////////////////////
 
-MeetingUrlRegexes = {
-  'zoom.us': /^\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/,
-  'teams.live.com': /^https?:\/\/teams\.live\.com\/v2\/#\/meet\/\d+\?(.*&)?p=[A-Za-z0-9]+(&.*)?$/,
-  'meet.google.com': /^https?:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(\?.*)?$/, 
-  'teams.microsoft.com': /^https?:\/\/teams\.microsoft\.com\/v2\/\?meetingjoin=true#\/l\/meetup-join\/19:[A-Za-z0-9_@.]+\/\d+\?context=[^&]+(&[^#]*)?$/
+const MicrosoftTeamsRegexes = {
+  pageToSend: /^https?:\/\/teams\.microsoft\.com\/v2\/\?meetingjoin=true#\/l\/meetup-join\/\d+:[A-Za-z0-9_@.]+\/\d+\?context=[^&]+(&[^#]*)?$/,
+  pageForPopup: /^https?:\/\/teams\.microsoft\.com\/light-meetings\/launch\?([\w%=&.-]+)?$/
+}
+
+const MeetingUrlRegexes = {
+  'zoom.us': [/^\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/],
+  'teams.live.com': [/^https?:\/\/teams\.live\.com\/v2\/#\/meet\/\d+\?(.*&)?p=[A-Za-z0-9]+(&.*)?$/],
+  'meet.google.com': [/^https?:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(\?.*)?$/], 
+  'teams.microsoft.com': Object.values(MicrosoftTeamsRegexes)
 }
