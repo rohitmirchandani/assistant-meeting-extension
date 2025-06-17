@@ -29,7 +29,13 @@ export function Orgs() {
 
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedOrgId = (event.target as HTMLInputElement).value;
-        await setInStorage(STORAGE.selectedOrgId, selectedOrgId)
+        await setInStorage(STORAGE.selectedOrgId, selectedOrgId);
+        //@ts-ignore
+        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (currentTab && currentTab.id) {
+            //@ts-ignore
+            chrome.tabs.sendMessage(currentTab.id, { type: "REFRESH_PAGE" });
+        }
     };
 
     return (

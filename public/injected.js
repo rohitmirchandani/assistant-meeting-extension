@@ -31,7 +31,7 @@ async function setAgents(data) {
       data.proxy_auth_token = response.token;
     }else{
       if('token' in response){
-        throw new Error("Please login to <a href='https://chat.50agents.com/login?autoclose=true' target='_blank' style='color: lightblue;'>50Agents</a>");
+        throw new Error("To continue, please <a href='https://chat.50agents.com/login?autoclose=true' target='_blank' class='login-link'>Sign in</a>");
       }
       throw new Error(response.error);
     }
