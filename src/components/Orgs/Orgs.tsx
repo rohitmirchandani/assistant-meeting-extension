@@ -1,27 +1,40 @@
 import { useEffect, useState } from "react";
 import { UserDetails } from "../../api/interfaces";
 import { getUserAndOrgs } from "../../api/user";
-import { Radio, RadioGroup, FormControlLabel, FormControl, CircularProgress } from "@mui/material";
-import { setInStorage, STORAGE, getFromStorage } from "../../../public/utility";
+import { Radio, RadioGroup, FormControlLabel, FormControl, CircularProgress, Button } from "@mui/material";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { setInStorage, STORAGE, getFromStorage, removeFromStorage } from "../../../public/utility";
 import "./Orgs.scss";
 
 export function Orgs() {
-    // @ts-ignore
-    const [userDetails, setUserDetails] = useState<UserDetails>();
-    const [error, setError] = useState<Error>();
-    const [currentOrgId, setCurrentOrgId] = useState<number>();
+    const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+    const [error, setError] = useState<Error | null>(null);
+    const [currentOrgId, setCurrentOrgId] = useState<number | null>(null);
+    const [hasRememberAgent, setHasRememberAgent] = useState(false);
+
+    useEffect(() => {
+      const fetchRememberAgent = async () => {
+        if (currentOrgId) {
+          const rememberAgent = await getFromStorage(STORAGE.rememberAgentSelection + currentOrgId);
+          setHasRememberAgent(!!rememberAgent);
+        }
+      }
+      fetchRememberAgent();
+    }, [currentOrgId]);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
-                const userDetails = await getUserAndOrgs();
-                const selectedOrgId = await getFromStorage(STORAGE.selectedOrgId);
-                setUserDetails(userDetails);
-                setCurrentOrgId(selectedOrgId || userDetails.currentCompany.id);
-                await setInStorage(STORAGE.selectedOrgId, selectedOrgId || userDetails.currentCompany.id);
-            } catch (error: any) {
+              const userDetails = await getUserAndOrgs();
+              const selectedOrgId = await getFromStorage(STORAGE.selectedOrgId);
+              const currentOrgId = selectedOrgId ? Number(selectedOrgId) : userDetails.currentCompany.id;
+              setUserDetails(userDetails);
+              setCurrentOrgId(currentOrgId);
+              await setInStorage(STORAGE.selectedOrgId, currentOrgId);
+            } catch (error) {
+                const err = error as Error;
                 console.error(error);
-                setError(error);
+                setError(err);
             }
         };
         fetchUserDetails();
@@ -29,11 +42,12 @@ export function Orgs() {
 
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedOrgId = (event.target as HTMLInputElement).value;
+        setCurrentOrgId(Number(selectedOrgId));
         await setInStorage(STORAGE.selectedOrgId, selectedOrgId);
-        //@ts-ignore
+        // @ts-expect-error Chrome API types not available
         const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (currentTab && currentTab.id) {
-            //@ts-ignore
+            // @ts-expect-error Chrome API types not available
             chrome.tabs.sendMessage(currentTab.id, { type: "REFRESH_PAGE" });
         }
     };
@@ -66,6 +80,33 @@ export function Orgs() {
                 ))}
               </RadioGroup>
             </FormControl>
+            {hasRememberAgent && (
+              <Button
+                onClick={async () => {
+                  await removeFromStorage(STORAGE.rememberAgentSelection + currentOrgId);
+                  setHasRememberAgent(false);
+                }}
+                variant="outlined"
+                startIcon={<RestartAltIcon />}
+                sx={{
+                  mt: 2,
+                  width: '100%',
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  padding: "8px 16px",
+                  fontSize: "0.875rem",
+                  color: 'rgba(255,255,255,0.85)',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.12)',
+                    borderColor: 'rgba(255,255,255,0.35)'
+                  }
+                }}
+              >
+                Reset Agent Selection
+              </Button>
+            )}
           </div>
         ) : (
           <div className="loading-wrapper">

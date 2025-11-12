@@ -16,7 +16,7 @@
     }
 
     h3 {
-      margin: 0 0 20px;
+      margin: 0;
       font-size: 1.25rem;
       font-weight: 600;
       color: #ffffff;
@@ -99,6 +99,122 @@
     }
     .close-btn:hover {
       color: #fff;
+    }
+
+    /* Default Agent Going Styles */
+    .default-agent-container {
+      text-align: center;
+      padding: 16px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .agent-avatar {
+      width: 36px;
+      height: 36px;
+      background: #2a4d6f;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      font-size: 1.2rem;
+    }
+
+    .agent-info {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+    }
+
+    .agent-name {
+      margin: 0;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .agent-status {
+      margin: 4px 0 0 0;
+      font-size: 0.85rem;
+      color: #aaaaaa;
+    }
+
+    .loading-bar {
+      height: 4px;
+      background: #2c2c2c;
+      border-radius: 2px;
+      margin: 12px 0 20px;
+      overflow: hidden;
+    }
+
+    .loading-progress {
+      height: 100%;
+      width: 0%;
+      background: #4a90e2;
+      border-radius: 2px;
+      animation: progress-animation 5.8s linear forwards;
+    }
+
+    @keyframes progress-animation {
+      from {
+        width: 0%;
+      }
+      to {
+        width: 100%;
+      }
+    }
+
+    .button-container {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .choose-btn, .cancel-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .choose-btn {
+      border: none;
+      background: #4a90e2;
+      color: white;
+      transition: background 0.25s ease;
+    }
+
+    .choose-btn:hover {
+      background: #357abd;
+    }
+
+    .cancel-btn {
+      padding: 8px 16px;
+      border: 1px solid #dc3545;
+      border-radius: 4px;
+      background: transparent;
+      color: #dc3545;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.25s ease;
+    }
+
+    .cancel-btn:hover {
+      background: rgba(220, 53, 69, 0.1);
     }
   </style>
 </head>

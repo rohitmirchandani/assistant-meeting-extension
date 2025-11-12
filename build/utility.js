@@ -1,6 +1,7 @@
 export const STORAGE = {
     selectedOrgId: 'selectedOrgId', 
-    token: 'proxy_auth_token', 
+    token: 'proxy_auth_token',
+    rememberAgentSelection: 'rememberAgentSelection_'
 }
 
 export const CONSTANTS = {
@@ -30,5 +31,15 @@ export async function getFromStorage(keys) {
     });
   });
 }
-  
-  
+
+export async function removeFromStorage(key) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.remove(key, () => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve();
+      }
+    });
+  });
+}

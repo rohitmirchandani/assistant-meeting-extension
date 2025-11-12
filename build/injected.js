@@ -2,11 +2,27 @@ const types = {
   AUTO: 'auto', 
   NONE: 'none'
 }
+const fauxAgents = {
+  [types.AUTO]: {
+    _id : types.AUTO,
+    name: 'Auto select smartly',
+    rememberMessageName: 'Smartly Agent',
+    icon: '🪄'
+  },
+  [types.NONE]: {
+    _id : types.NONE,
+    name: "Don't join Agent",
+    rememberMessageName: 'No Agent', 
+    icon: '🚫'
+  }
+}
 
 let pageUrl = null;
 let selectedAgentId = null;
 let orgId = null;
 let token = null;
+let shouldRememberAgentSelection = false;
+
 let timeout = setTimeout(() => {
   selectAgent(selectedAgentId);
 }, 60000)
@@ -67,12 +83,42 @@ async function setAgents(data) {
   }
 
   let agents = agentsData.data.agents;
-  agents = [...agents, { _id: types.NONE, name: "Don't join Agent", icon: '🚫' }]
+  const rememberAgentSelection = await getFromStorage('rememberAgentSelection_' + orgId);
+  if(rememberAgentSelection && (agents.some(agent => agent._id === rememberAgentSelection) || Object.values(types).includes(rememberAgentSelection))){ // If remember agent is selected, hold a promise for 10 seconds showing which agent is going and if choosen manually cancel that promise and move forward.
+    let dispatchAgentTimeout;
+    let resolvePromise;
+    const dispatchAgent = async () => {
+      await selectAgent(rememberAgentSelection);
+      closeWindow();
+      await new Promise(resolve => setTimeout(resolve, 1100));
+    }
+    selectedAgentId = rememberAgentSelection;
+    const dispatchAgentPromise = new Promise(resolve => {
+      resolvePromise = resolve;
+      dispatchAgentTimeout = setTimeout(async () => {
+        await dispatchAgent();
+        resolve();
+      }, 6000);
+    });
+    agentsDiv.innerHTML = Components.defaultAgentGoing(agents.find(agent => agent._id === rememberAgentSelection) || fauxAgents[rememberAgentSelection], () => {
+      clearTimeout(dispatchAgentTimeout);
+      resolvePromise();
+    }, async () => {
+      await selectAgent(types.NONE);
+      closeWindow();
+    });
+    await dispatchAgentPromise;
+  }else{
+    await setInStorage('rememberAgentSelection_' + orgId, null);
+  }
+  agents = [...agents, fauxAgents[types.NONE]]
   if (agents.length > 2) {
-    agents = [{ _id: types.AUTO, name: 'Auto select smartly', icon: '🪄' }, ...agents]
+    agents = [fauxAgents[types.AUTO], ...agents];
   }
   selectedAgentId = agents[0]._id;
-  agentsDiv.innerHTML = '';
+  agentsDiv.innerHTML = Components.setAsDefault((isSelected) => {
+    shouldRememberAgentSelection = isSelected;
+  });
   agentDivs = [];
   agents.forEach((agent, idx) => {
     const div = document.createElement('div');
@@ -124,6 +170,10 @@ function updateAgentFocus() {
 
 async function selectAgent(agentId) {
   selectedAgentId = agentId;
+  window.parent.postMessage({ type: "set_in_session", data: { key: pageUrl, value: '1' } }, "*");
+  if(shouldRememberAgentSelection){
+    await setInStorage('rememberAgentSelection_' + orgId, selectedAgentId);
+  }
   if(selectedAgentId == types.NONE){
     initiateClosePopup('Okay :)');
     return;
@@ -143,7 +193,6 @@ async function selectAgent(agentId) {
       headers,
       body: JSON.stringify(body)
     });
-    window.parent.postMessage({ type: "set_in_session", data: { key: pageUrl, value: '1' } }, "*");
     initiateClosePopup();
   } catch (err) {
     console.error('API call failed:', err);
@@ -206,7 +255,6 @@ function refreshWindow() {
   window.parent.postMessage({ type: "refreshIframe" }, "*");
 }
 
-
 document.addEventListener('keydown', (e) => {
   if (!agentDivs.length) return;
   if (document.activeElement && !agentDivs.includes(document.activeElement)) return;
@@ -227,3 +275,47 @@ document.addEventListener('keydown', (e) => {
     closeWindow();
   }
 });
+
+const Components = {
+  setAsDefault: (onClick, isChecked = false) => {
+    const html = `
+    <div style="padding: 6px;">
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; width: max-content;">
+        Remember my selection
+        <input ${isChecked ? 'checked' : ''} type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" id="remember-selection-checkbox">
+      </label>
+    </div>`;
+    setTimeout(() => {
+      const checkbox = document.getElementById('remember-selection-checkbox');
+      checkbox?.addEventListener('change', (e) => onClick(e.target.checked));
+    }, 0);
+    return html;
+  }, 
+  defaultAgentGoing: (agent, onManual, onCancel) => {
+    const html = `
+    <div class="default-agent-container">
+      <div class="agent-header">
+        <div class="agent-avatar">
+          ${agent.icon || agent.name.charAt(0).toUpperCase()}
+        </div>
+        <div class="agent-info">
+          <p class="agent-name">${agent.rememberMessageName || agent.name}</p>
+          <p class="agent-status">is joining the meeting</p>
+        </div>
+      </div>
+      <div class="loading-bar">
+        <div class="loading-progress" id="progress-bar"></div>
+      </div>
+      <div class="button-container">
+        <button id="choose-btn" class="choose-btn">Choose</button>
+        <button id="cancel-btn" class="cancel-btn">Don't Join</button>
+      </div>
+    </div>
+    `;
+    setTimeout(() => {
+      document.getElementById('choose-btn')?.addEventListener('click', onManual);
+      document.getElementById('cancel-btn')?.addEventListener('click', onCancel);
+    }, 0);
+    return html;
+  }
+}
