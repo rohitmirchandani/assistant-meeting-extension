@@ -104,7 +104,7 @@ export function Orgs() {
                   }
                 }}
               >
-                Reset Agent Selection
+                Forget default agent
               </Button>
             )}
           </div>
